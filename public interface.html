@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Child Protection Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#0A2647;--white:#fff;--bg:#F5F7FA;--border:#E5E7EB;--green:#22C55E;--red:#DC2626;--text:#1F2937}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif}
+body{background:var(--bg);color:var(--text)}
+header{position:sticky;top:0;background:var(--blue);color:#fff;padding:15px 20px;z-index:99}
+nav{display:flex;justify-content:space-between;align-items:center}
+nav ul{display:flex;gap:15px;list-style:none;flex-wrap:wrap}
+nav a{color:#fff;text-decoration:none}
+.container{max-width:1200px;margin:auto;padding:20px}
+.section{display:none}.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+.card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 3px 10px rgba(0,0,0,.08);cursor:pointer;transition:.3s}
+.card:hover{transform:translateY(-5px)}
+input,select,textarea{width:100%;padding:10px;margin:8px 0;border:1px solid var(--border);border-radius:8px}
+button{background:var(--blue);color:#fff;border:none;padding:10px 15px;border-radius:8px;cursor:pointer}
+.alert-card{background:#fff;padding:15px;border-radius:12px}
+.photo{height:120px;background:#ddd;border-radius:8px;margin-bottom:10px}
+.upload{border:2px dashed #999;padding:20px;text-align:center;border-radius:10px}
+.timeline .step{padding:10px;margin:10px 0;border-left:4px solid #ccc}
+.done{border-color:var(--green)}
+footer{background:var(--blue);color:#fff;text-align:center;padding:20px;margin-top:30px}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);align-items:center;justify-content:center}
+.modal-content{background:#fff;padding:20px;border-radius:12px}
+</style>
+</head>
+<body>
+<header>
+<nav>
+<h3>🛡 Child Protection Portal</h3>
+<ul>
+<li><a href="#" onclick="show('home')">Home</a></li>
+<li><a href="#" onclick="show('report')">Report Activity</a></li>
+<li><a href="#" onclick="show('sighting')">Child Sighting</a></li>
+<li><a href="#" onclick="show('alerts')">Alerts</a></li>
+<li><a href="#" onclick="show('track')">Track Report</a></li>
+</ul>
+</nav>
+</header>
+
+<div class="container">
+
+<section id="home" class="section active">
+<h2>Quick Actions</h2><br>
+<div class="grid">
+<div class="card" onclick="show('report')">🚨<h3>Report Suspicious Activity</h3></div>
+<div class="card" onclick="show('sighting')">👀<h3>Report Child Sighting</h3></div>
+<div class="card" onclick="show('alerts')">📢<h3>Missing Child Alerts</h3></div>
+<div class="card" onclick="show('track')">📍<h3>Track Report Status</h3></div>
+</div><br>
+<input placeholder="Search Missing Child Alerts..." onkeyup="filterAlerts(this.value)">
+<br><br>
+<h2>Recent Alerts</h2><br>
+<div id="recent" class="grid"></div>
+</section>
+
+<section id="report" class="section">
+<h2>Report Suspicious Activity</h2>
+<select>
+<option>Suspicious Movement of Child</option>
+<option>Possible Child Labor</option>
+<option>Suspected Trafficking</option>
+</select>
+<textarea rows="5" placeholder="Incident Description"></textarea>
+<input type="datetime-local">
+
+<button onclick="getLocation()">📍 Use My Current Location</button>
+<p id="location"></p>
+
+<div class="upload">
+<input type="file" id="files" multiple onchange="previewFiles()">
+<div id="previews"></div>
+</div>
+
+<label><input type="checkbox" id="anon" checked onchange="toggleReporter()"> Submit Anonymously</label>
+
+<div id="reporter" style="display:none">
+<input placeholder="Full Name">
+<input placeholder="Phone Number">
+<input placeholder="Email">
+</div>
+
+<button onclick="submitReport()">Submit Report</button>
+</section>
+
+<section id="sighting" class="section">
+<h2>Child Sighting</h2>
+<input placeholder="Child Name">
+<input placeholder="Location of Sighting">
+<input type="datetime-local">
+<textarea placeholder="Description"></textarea>
+<input type="file">
+<button onclick="alert('SIGHT-2026-001 Generated')">Submit Sighting</button>
+</section>
+
+<section id="alerts" class="section">
+<h2>Missing Child Alerts</h2>
+<input id="searchAlert" placeholder="Search by Name" onkeyup="filterAlerts(this.value)">
+<select onchange="filterLocation(this.value)">
+<option>All Locations</option>
+<option>Kochi</option>
+<option>Trivandrum</option>
+<option>Kollam</option>
+<option>Kozhikode</option>
+</select>
+<br><br>
+<div id="alertsGrid" class="grid"></div>
+</section>
+
+<section id="track" class="section">
+<h2>Track Report</h2>
+<input id="rid" placeholder="REP-2026-001">
+<button onclick="track()">Search</button>
+<div id="timeline"></div>
+</section>
+
+</div>
+
+<div class="modal" id="modal">
+<div class="modal-content">
+<h3>✓ Report Submitted Successfully</h3>
+<p id="reportId"></p>
+<button onclick="closeModal()">Close</button>
+</div>
+</div>
+
+<footer>
+© 2026 Child Trafficking Prevention & Rehabilitation Support System
+</footer>
+
+<script>
+function show(id){
+document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+}
+
+const alerts=[
+["Arjun Kumar",10,"Kochi"],["Meera Nair",8,"Trivandrum"],["Rahul Das",12,"Kollam"],
+["Anu",9,"Kozhikode"],["Vishnu",11,"Kochi"],["Dev",7,"Trivandrum"],
+["Arya",13,"Kollam"],["Neha",10,"Kozhikode"]
+];
+
+function render(data){
+let html='';
+data.forEach(a=>html+=`<div class="alert-card"><div class="photo"></div><h4>${a[0]}</h4><p>Age:${a[1]}</p><p>${a[2]}</p><button>View Details</button></div>`);
+alertsGrid.innerHTML=html;
+recent.innerHTML=html.split("</div>").slice(0,12).join("</div>");
+}
+render(alerts);
+
+function filterAlerts(q){
+q=q.toLowerCase();
+render(alerts.filter(a=>a[0].toLowerCase().includes(q)));
+}
+
+function filterLocation(loc){
+if(loc=="All Locations") render(alerts);
+else render(alerts.filter(a=>a[2]==loc));
+}
+
+function getLocation(){
+navigator.geolocation.getCurrentPosition(
+p=>location.innerHTML=`Latitude:${p.coords.latitude}<br>Longitude:${p.coords.longitude}`,
+()=>location.innerHTML="Location permission denied"
+);
+}
+
+function toggleReporter(){
+reporter.style.display=anon.checked?"none":"block";
+}
+
+function previewFiles(){
+previews.innerHTML="";
+[...files.files].forEach(f=>{
+let d=document.createElement("div");
+d.textContent=f.name;
+previews.appendChild(d);
+});
+}
+
+function submitReport(){
+let id="REP-2026-001";
+localStorage.setItem("reportId",id);
+reportId.textContent="Your Report ID: "+id;
+modal.style.display="flex";
+}
+
+function closeModal(){modal.style.display="none";}
+
+function track(){
+let id=document.getElementById("rid").value.trim();
+if(id==="REP-2026-001"){
+timeline.innerHTML=`
+<div class="timeline">
+<div class="step done">✓ Submitted</div>
+<div class="step done">✓ Under Review</div>
+<div class="step done">✓ Investigation Ongoing</div>
+<div class="step">○ Resolved</div>
+</div>`;
+}else{
+timeline.innerHTML="<p>No report found.</p>";
+}
+}
+</script>
+</body>
+</html>
