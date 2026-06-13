@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Role Based Auth System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="login.css">
+</head>
+
+<body>
+
+<!-- ================= ROLE SELECT ================= -->
+<div id="roleScreen" class="screen active">
+    <div class="card">
+        <h2>Select Role</h2>
+
+        <select id="role">
+            <option value="social">User</option>
+             <option value="social">Police</option>
+            <option value="ngo">NGO Staff</option>
+        </select>
+
+        <button onclick="openAuth()">Continue</button>
+    </div>
+</div>
+
+<!-- ================= AUTH (REGISTER + LOGIN) ================= -->
+<div id="authScreen" class="screen">
+
+    <!-- REGISTER -->
+    <div class="card" id="registerBox">
+        <h2 id="regTitle">Register</h2>
+
+        <input type="text" id="regUser" placeholder="Username">
+        <input type="password" id="regPass" placeholder="Password">
+
+        <button onclick="register()">Register</button>
+        <button onclick="showLogin()">Already have account? Login</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="card" id="loginBox" style="display:none;">
+        <h2 id="logTitle">Login</h2>
+
+        <input type="text" id="logUser" placeholder="Username">
+        <input type="password" id="logPass" placeholder="Password">
+        <label style="display:flex;align-items:center;gap:8px;margin:12px 0;cursor:pointer;user-select:none;">
+            <input type="checkbox" id="rememberMe" style="width:auto;margin:0;">
+            <span style="color:#6b7280;font-size:0.95rem;">Remember me</span>
+        </label>
+
+        <button onclick="login()">Login</button>
+        <button onclick="showRegister()">New user? Register</button>
+    </div>
+
+</div>
+
+<!-- ================= DASHBOARD ================= -->
+<div id="dashboardScreen" class="screen">
+
+    <div class="header">
+        <h3 id="welcome"></h3>
+        <button onclick="logout()" style="width:auto;background:red;">Logout</button>
+    </div>
+
+    <div style="padding:20px">
+        <button class="btn social role-social" onclick="window.location.href='index.html'">Police</button>
+        <button class="btn counselor role-counselor">User</button>
+        <button class="btn ngo role-ngo" onclick="window.location.href='public interface.html'">NGO</button>
+    </div>
+
+</div>
+
+<script>
+
+let role = "";
+let users = JSON.parse(localStorage.getItem("users")) || {};
+
+/* ================= AUTO-LOAD SAVED CREDENTIALS ================= */
+window.addEventListener('load', function(){
+    const saved = localStorage.getItem("savedCredentials");
+    if(saved){
+        try{
+            const creds = JSON.parse(saved);
+            setTimeout(() => {
+                document.getElementById("role").value = creds.role;
+            }, 100);
+        } catch(e){}
+    }
+});
+
+/* ================= SCREEN CONTROL ================= */
+function show(id){
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+}
+
+/* ================= STEP 1 ROLE ================= */
+function openAuth(){
+    role = document.getElementById("role").value;
+
+    document.getElementById("regTitle").innerText = role.toUpperCase() + " REGISTER";
+    document.getElementById("logTitle").innerText = role.toUpperCase() + " LOGIN";
+
+    show("authScreen");
+    showRegister();
+}
+
+/* ================= TOGGLE ================= */
+function showRegister(){
+    document.getElementById("registerBox").style.display = "block";
+    document.getElementById("loginBox").style.display = "none";
+}
+
+function showLogin(){
+    document.getElementById("registerBox").style.display = "none";
+    document.getElementById("loginBox").style.display = "block";
+    
+    // Auto-fill saved credentials if they exist for this role
+    const saved = localStorage.getItem("savedCredentials");
+    if(saved){
+        try{
+            const creds = JSON.parse(saved);
+            if(creds.role === role){
+                document.getElementById("logUser").value = creds.username || "";
+                document.getElementById("logPass").value = creds.password || "";
+                document.getElementById("rememberMe").checked = true;
+            }
+        } catch(e){}
+    }
+}
+
+/* ================= REGISTER ================= */
+function register(){
+
+    let u = document.getElementById("regUser").value;
+    let p = document.getElementById("regPass").value;
+
+    if(!u || !p) return alert("Fill all fields");
+
+    if(!users[role]) users[role] = [];
+
+    users[role].push({username:u, password:p});
+
+    localStorage.setItem("users", JSON.stringify(users));
+
+    alert("Registered as " + role);
+
+    showLogin();
+}
+
+/* ================= LOGIN ================= */
+function login(){
+
+    let u = document.getElementById("logUser").value;
+    let p = document.getElementById("logPass").value;
+
+    let list = users[role] || [];
+
+    let user = list.find(x => x.username === u && x.password === p);
+
+    if(!user){
+        alert("Invalid credentials for " + role);
+        return;
+    }
+
+    localStorage.setItem("loggedUser", JSON.stringify({username:u, role:role}));
+    
+    // Save credentials if "Remember me" is checked
+    if(document.getElementById("rememberMe").checked){
+        localStorage.setItem("savedCredentials", JSON.stringify({
+            username: u,
+            password: p,
+            role: role
+        }));
+    } else {
+        localStorage.removeItem("savedCredentials");
+    }
+
+    loadDashboard({username:u, role:role});
+}
+
+/* ================= DASHBOARD ================= */
+function loadDashboard(user){
+
+    show("dashboardScreen");
+
+    document.getElementById("welcome").innerText =
+        "Welcome " + user.username + " (" + user.role + ")";
+
+    document.querySelectorAll(".btn").forEach(b => b.style.display="none");
+
+    document.querySelectorAll(".role-" + user.role)
+        .forEach(b => b.style.display="inline-block");
+}
+
+/* ================= LOGOUT ================= */
+function logout(){
+    show("roleScreen");
+}
+
+</script>
+
+</body>
+</html>
