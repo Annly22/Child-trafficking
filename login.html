@@ -8,7 +8,11 @@
 </head>
 
 <body>
-
+ 
+<header style="padding:18px;text-align:center;background:#0A2647;color:#fff;">
+    <h1 style="margin:0;font-size:1.4rem;">Child Protection Portal</h1>
+    <p style="margin:6px 0 0;color:#d1d5db;">Role-based access for Police · NGO · Public users</p>
+</header>
 <!-- ================= ROLE SELECT ================= -->
 <div id="roleScreen" class="screen active">
     <div class="card">
@@ -26,6 +30,11 @@
 
 <!-- ================= AUTH (REGISTER + LOGIN) ================= -->
 <div id="authScreen" class="screen">
+
+    <div style="text-align:center;margin:12px 0 18px;">
+        <h2 style="margin:0;font-size:1.1rem;color:#111827;">Account Access</h2>
+        <p style="margin:6px 0 0;color:#6b7280;">Register or login to continue as the selected role.</p>
+    </div>
 
     <!-- REGISTER -->
     <div class="card" id="registerBox">
@@ -60,6 +69,7 @@
 
     <div class="header">
         <h3 id="welcome"></h3>
+        <p id="welcomeSub" style="margin:6px 0 0;color:#374151;">Use the buttons below to access role-specific interfaces.</p>
         <button onclick="logout()" style="width:auto;background:red;">Logout</button>
     </div>
 
