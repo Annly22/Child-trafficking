@@ -41,6 +41,7 @@ footer{background:var(--blue);color:#fff;text-align:center;padding:20px;margin-t
 <li><a href="#" onclick="show('alerts')">Alerts</a></li>
 <li><a href="#" onclick="show('track')">Track Report</a></li>
 </ul>
+<button class="logout-btn" onclick="handleLogout()">Logout</button>
 </nav>
 </header>
 
@@ -206,6 +207,12 @@ timeline.innerHTML=`
 }else{
 timeline.innerHTML="<p>No report found.</p>";
 }
+}
+
+function handleLogout() {
+  if (confirm("Are you sure you want to logout?")) {
+    window.location.href = "login.html";
+  }
 }
 </script>
 </body>
